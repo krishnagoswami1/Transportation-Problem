@@ -50,6 +50,9 @@ with st.form(key = "dataframe_matrix", clear_on_submit=False, enter_to_submit=Tr
 
 if submit_button: 
     m,n = len(A), len(A[0])
+    
+    st.header("Problem:")
+    st.text("Here W1 represent Warehouse 1   and similarly F1 represent Factory 1 and so on.")
     if sum(S) == sum(D):
         df = pd.DataFrame(0,index = [f'F{i}' for i in range(1, m+1)] +['demands'], columns= [f'W{i}' for i in range(1, n+1)]+['supplies'],dtype = int)
         df.iloc[0:-1, 0:-1] = A
@@ -58,6 +61,7 @@ if submit_button:
 
     elif sum(S)< sum(D): 
         #introduce a dummy supply 
+        st.write("Since we are short of supply here, we add a dummy supplier with zero costs, to make this problem a balanced transportation problem")
         df = pd.DataFrame(0,index = [f'F{i}' for i in range(1, m+1)] +['dummy']+['demands'], columns= [f'W{i}' for i in range(1, n+1)]+['supplies'],dtype = int)
         df.iloc[0:-2, 0:-1] = A
         df.iloc[0:-2, -1]=S
@@ -67,6 +71,7 @@ if submit_button:
     
     else: 
         #introduce a dummy demand 
+        st.write("Since we are short of demand here, we add a dummy warehouse with zero costs, to make this problem a balanced transportation problem")
         df = pd.DataFrame(0,index = [f'F{i}' for i in range(1, m+1)] +['demands'], columns= [f'W{i}' for i in range(1, n+1)]+['dummy']+['supplies'],dtype = int)
         df.iloc[0:-1, 0:-2] = A
         df.iloc[0:-1, -1]=S
@@ -77,8 +82,6 @@ if submit_button:
     df.iloc[-1,-1]= max(sum(S), sum(D))
 
 
-    st.header("Problem:")
-    st.text("Here W1 represent Warehouse 1   and similarly F1 represent Factory 1 and so on.")
     st.write(df)
     st.write("Our goal is to allocate different supply to different demands in such a way that we have to pay the least cost")
     st.write("We have different algorithms to find such allocations: Here we are using ")
