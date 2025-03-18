@@ -1,79 +1,92 @@
-def calc_z_ratio(df,c,m,n):
-    #calcualte z values and zj-cj values
-    df.iloc[m+1,1]="zj"
-    z=[df.iloc[1:m+1,0] @ df.iloc[1:m+1,alpha+2]  for alpha in range(n+m)]
-    df.iloc[m+1,2:n+m+2]= z
+import streamlit as st
+import numpy as np
+import pandas as pd
+from algorithms import *
+st.title("Transportation Problem Solver")
+st.text("Since any transportation problem can be seen as the problem of transportation from 'm' number of factories to 'n' number of warehouses. So we will stick to this context in this solver.")
+st.subheader("Enter the dimensions of cost matrix: ")
 
-    df.iloc[m+2,1]="zj-cj"
-    df.iloc[m+2, 2:n+m+2]= np.subtract(z,c)
-    entering_column__pos_index = np.argmin((df.iloc[m+2, 2:n+m+2])) +2
-    entering_variable =df.iloc[0, entering_column__pos_index]
-    print("entering_variable is ", entering_variable)
-
-
-    #calcuate ratio on the basis of entering variable 
-    ratios = np.divide(
-        df.iloc[1: m+1,1],
-          df.iloc[1:m+1, entering_column__pos_index],
-          where=df.iloc[1:m+1, entering_column__pos_index] != 0
-          )
-    ratios = [x  if x>=0 else "-ve" for x in ratios]
-    df.iloc[1:m+1,-1] = ratios
-
-    exiting_row__pos_index = np.argmin(ratios) +1
-    exiting_variable =df.index[exiting_row__pos_index]
-    print("exiting_variable is ", exiting_variable)
-    return (entering_variable, entering_column__pos_index, exiting_variable, exiting_row__pos_index)
+col1, col2 = st.columns(2, gap='large', vertical_alignment='center',border=False)
+with col1:
+    num_rows = st.number_input(label="number of rows/ number of factories ", max_value=20, min_value=1, value=3)
+with col2 : 
+    num_cols = st.number_input(label="number of columns/ number of warehouses ", max_value=20, min_value=1, value=3)
 
 
-def simplex_func(c, A, b, maximisation=True): 
-    #assuming the lpp problem is to maximise z= cx subject to conditions Ax<= b
+
+with st.form(key = "dataframe_matrix", clear_on_submit=False, enter_to_submit=True, border = False): 
+
+    st.subheader("Enter the cost matrix: ")
+    A = []
+    for row in range(num_rows):
+        row_input = []
+        cols = st.columns(num_cols)
+        for col_idx in range(num_cols):
+            with cols[col_idx] : 
+                input = st.number_input("", value=5, key = f"row {row} and col {col_idx}")
+            row_input.append(input)
+        A.append(row_input)
+
+    st.subheader("Enter the supply matrix: ")
+    S=[]
+    cols = st.columns(num_rows)
+    for i in range(num_rows): 
+        with cols[i]: 
+            input = st.number_input(f"supply by F{i+1}", value = 1, key = f"supply row {i}")
+        S.append(input)
+
+
+    st.subheader("Enter the demands matrix: ")
+    D = []
+    cols = st.columns(num_cols)
+    for i in range(num_cols): 
+        with cols[i]: 
+            input = st.number_input(f"demand by W{i+1}", value = 1, key = f"demand col {i}")
+        D.append(input)
+
+    st.subheader("Algorithm to use: ")
+    algo = st.radio(label='Algorithm to use: ', options=['North-West corner method', 'Least cost method', "Vogel's approximation method"], index = 2, horizontal = True, label_visibility = "collapsed")
+    submit_button = st.form_submit_button("Solve")
+
+if submit_button: 
     m,n = len(A), len(A[0])
-    print("m=",m,'n=',n)
-    #m= number of rows of A which is exactly the number of conditions/equations
-    # n = number of variables 
-    basis = [f"s{i}" for i in range(1, m+1)]
-    cost_dict = {**{f"x{i}": c[i] for  i in range(n)}, **{x:0 for x in basis}}
-    c = list(cost_dict.values())
-    df = pd.DataFrame(
-        columns=[np.NaN," c -> "]+c+[np.NaN],
-        index=["B"] + basis + [np.NaN, np.NaN]
-        )
-    df.iloc[0]=['cb', 'xb']+[f"x{i}" for i in range(1, n+1)]+basis+["Ratio"]
-    df.iloc[1:m+1,0]= [cost_dict[x] for x in basis]
-    df.iloc[1: m+1,1]=b
-    df.iloc[1:m+1,2:n+2]=A
-    df.iloc[1:m+1,n+2:n+m+2]=np.eye(m, dtype=int)
+    if sum(S) == sum(D):
+        df = pd.DataFrame(0,index = [f'F{i}' for i in range(1, m+1)] +['demands'], columns= [f'W{i}' for i in range(1, n+1)]+['supplies'],dtype = int)
+        df.iloc[0:-1, 0:-1] = A
+        df.iloc[0:-1, -1]=S
+        df.iloc[-1, 0:-1] = D
 
-    #now our dataframe is ready for operations 
-
-    ###first iteration 
-    entering_variable, entering_column__pos_index, exiting_variable, exiting_row__pos_index=calc_z_ratio(df,c,m,n)
-    print(df.fillna(" "))
-
-    #analyse the situation and decide whether we have to go to next iteration or not
-
-    #if no - we reached optimal solution
-    #break
-
-
-    #if yes - we need more iteration
+    elif sum(S)< sum(D): 
+        #introduce a dummy supply 
+        df = pd.DataFrame(0,index = [f'F{i}' for i in range(1, m+1)] +['dummy']+['demands'], columns= [f'W{i}' for i in range(1, n+1)]+['supplies'],dtype = int)
+        df.iloc[0:-2, 0:-1] = A
+        df.iloc[0:-2, -1]=S
+        df.iloc[-2,0:-1]=0
+        df.iloc[-1, 0:-1] = D
+        df.iloc[-2,-1]=sum(D) - sum(S)
     
+    else: 
+        #introduce a dummy demand 
+        df = pd.DataFrame(0,index = [f'F{i}' for i in range(1, m+1)] +['demands'], columns= [f'W{i}' for i in range(1, n+1)]+['dummy']+['supplies'],dtype = int)
+        df.iloc[0:-1, 0:-2] = A
+        df.iloc[0:-1, -1]=S
+        df.iloc[-1, 0:-2] = D
+        df.iloc[0:-1, -2]=0
+        df.iloc[-1, -2] = sum(S) - sum(D)
 
-    #transitioning to next iteration
-    pivot_element = df.iloc[exiting_row__pos_index, entering_column__pos_index]
-    df.iloc[exiting_row__pos_index, 1: n+m+2] /= pivot_element
-    for i in range(1,m+1): 
-        if i != exiting_row__pos_index:
-            df.iloc[i, 1:n+m+2] -= df.iloc[exiting_row__pos_index, 1: n+m+2] * df.iloc[i,entering_column__pos_index]
-    
+    df.iloc[-1,-1]= max(sum(S), sum(D))
 
-    calc_z_ratio(df,c,m,n)
-    #again analyse
-    df = df.fillna(" ")
-    print(df)
 
-c = [3,5,4]
-A = [[2,3,0],[0,2,5],[3,2,4]]
-b=[8,10,15]
-simplex_func(c,A,b)
+    st.header("Problem:")
+    st.text("Here W1 represent Warehouse 1   and similarly F1 represent Factory 1 and so on.")
+    st.write(df)
+    st.write("Our goal is to allocate different supply to different demands in such a way that we have to pay the least cost")
+    st.write("We have different algorithms to find such allocations: Here we are using ")
+    st.markdown(f"**{algo}**")
+
+    if algo == "Vogel's approximation method": 
+        vam_method(df.copy())
+    elif algo == 'North-West corner method':
+        corner_method(df.copy())
+    elif algo =='Least cost method': 
+        least_cost_method(df.copy())
