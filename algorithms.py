@@ -105,6 +105,7 @@ def vam_method(df):
     df['penalties'] =np.nan
 
     output_cost_arr = []
+    st.write("In the Vogel's Approximation method, we calculate penalties for each row and column, where penalty = second lowest cost in row(or col) - lowest cost in row (or col)")
     while len(df)> 2:
         m,n = df.shape
         m,n = m-2 , n-2
@@ -149,7 +150,11 @@ def vam_method(df):
         st.write("-"*20)
         st.write(df)
         st.write()
-        st.write("the least cost in the above matrix is ", element)
+        if ind < m:
+            st.write(f"the highest penalty is of the row corresponding to {df.index[ind]} ")
+        else: 
+            st.write(f"the highest peanlty is of the column corresponding to {df.columns[ind]}")
+        st.write("the least cost here is ", element)
         st.write("the corresponding supply is ", supply ," and demand is ", demand)
         
         if demand < supply:
