@@ -11,6 +11,7 @@ def corner_method(df):
     while len(df)>1:
         st.write()
         st.write('-'*20)
+        df.iloc[-1,-1]= sum(df.iloc[0:-1,-1])
         st.write(df)
         st.write()
         element, supply, demand = df.iloc[0,0], df.iloc[0,-1], df.iloc[-1,0]
@@ -60,7 +61,7 @@ def least_cost_method(df):
         demand, supply = df.iloc[-1,col],df.iloc[row, -1]
         element = df.iloc[row, col]
         minn = min(demand, supply)
-    
+        df.iloc[-1,-1]= sum(df.iloc[0:-1,-1])
         st.write()
         st.write("-"*20)
         st.write(df)
@@ -155,7 +156,7 @@ def vam_method(df):
     
 
         minn = min(demand, supply)
-    
+        df.iloc[-2,-2]= sum(df.iloc[0:-2,-2])
         st.write()
         st.write("-"*20)
         st.write(df)
