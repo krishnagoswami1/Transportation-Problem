@@ -41,7 +41,7 @@ def corner_method(df):
     cost_expression = " + ".join(cost_parts)
     output_cost = sum([x[0]*x[1] for x in output_cost_arr])
 
-    st.markdown("##### The cost we get from the solution of Vogel's approximation method is:")
+    st.markdown("##### The cost we get from the solution of North-West corner method is:")
     st.markdown(f"**{cost_expression} = {output_cost}**")
 
     return output_cost
@@ -89,7 +89,7 @@ def least_cost_method(df):
     cost_expression = " + ".join(cost_parts)
     output_cost = sum([x[0]*x[1] for x in output_cost_arr])
 
-    st.markdown("##### The cost we get from the solution of Vogel's approximation method is:")
+    st.markdown("##### The cost we get from the solution of Least cost method is:")
     st.markdown(f"**{cost_expression} = {output_cost}**") 
 
     return output_cost
