@@ -115,10 +115,16 @@ def vam_method(df):
             temp_arr = sorted(df.iloc[i, 0:-2])
             if len(temp_arr)> 1:
                 df.iloc[i,-1] = temp_arr[1]-temp_arr[0]
+            elif len(temp_arr)==1: 
+                df.iloc[i,-1] = temp_arr[0]
+        
+    #calculate column penalties
         for i in range(len(df.iloc[0])-2): 
             temp_arr = sorted(df.iloc[ 0:-2,i])
             if len(temp_arr) > 1:
                 df.iloc[-1,i] = temp_arr[1]-temp_arr[0]
+            elif len(temp_arr)==1: 
+                df.iloc[-1,i] = temp_arr[0]
     
         #a list containing all penalities 
         penalties = np.hstack((df.iloc[0:-2,-1], df.iloc[-1, 0:-2]))
@@ -127,6 +133,7 @@ def vam_method(df):
         if ind < m: 
             #this is a row penalty
             #our focus element will be the lowest cost in this row
+            st.write(f"row = {row}")
             col = np.argmin(df.iloc[ind, 0:-2])
             row = ind
             element = df.iloc[row, col]
@@ -135,8 +142,11 @@ def vam_method(df):
             #this is a column penalty
             #our focus element will be the lowest cost in this column
             col = ind - m
+            st.write(f"m = {m} and col  = {col}")
             row = np.argmin(df.iloc[0:-2,col])
+            st.write(f"row = {row}")
             element= df.iloc[row, col]
+            st.write(f"element = {element}")
     
     
         #now we will apply the standard approach of allocation
@@ -153,7 +163,7 @@ def vam_method(df):
         if ind < m:
             st.write(f"the highest penalty is of the row corresponding to {df.index[ind]} ")
         else: 
-            st.write(f"the highest peanlty is of the column corresponding to {df.columns[ind]}")
+            st.write(f"the highest peanlty is of the column corresponding to {df.columns[ind - m]}")
         st.write("the least cost here is ", element)
         st.write("the corresponding supply is ", supply ," and demand is ", demand)
         
@@ -175,14 +185,13 @@ def vam_method(df):
         output_cost_arr.append([element,minn])
 
     st.write("The cost we get from the solution of Vogel's approximation method is ")
-    for i, x in enumerate(output_cost_arr):
-        if i == len(output_cost_arr) - 1:  # If it's the last element
-            st.write(f"{x[0]} x {x[1]}", end="")
-        else:
-            st.write(f"{x[0]} x {x[1]}", end=" + ")
 
+    cost_parts = [f"{x[0]} x {x[1]}" for x in output_cost_arr]
+    cost_expression = " + ".join(cost_parts)
     output_cost = sum([x[0]*x[1] for x in output_cost_arr])
-    st.write("=",output_cost) 
+
+    st.markdown("##### The cost we get from the solution of Vogel's approximation method is:")
+    st.markdown(f"**{cost_expression} = {output_cost}**")
 
     return output_cost
 
