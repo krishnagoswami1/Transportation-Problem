@@ -37,14 +37,12 @@ def corner_method(df):
         output_cost_arr.append([element,minn])
         
     st.write("The cost we get from the solution of North West corner method is ")
-    for i, x in enumerate(output_cost_arr):
-        if i == len(output_cost_arr) - 1:  # If it's the last element
-            st.write(f"{x[0]} x {x[1]}", end="")
-        else:
-            st.write(f"{x[0]} x {x[1]}", end=" + ")
-
+    cost_parts = [f"{x[0]} x {x[1]}" for x in output_cost_arr]
+    cost_expression = " + ".join(cost_parts)
     output_cost = sum([x[0]*x[1] for x in output_cost_arr])
-    st.write("=",output_cost) 
+
+    st.markdown("##### The cost we get from the solution of Vogel's approximation method is:")
+    st.markdown(f"**{cost_expression} = {output_cost}**")
 
     return output_cost
         
@@ -87,14 +85,12 @@ def least_cost_method(df):
         output_cost_arr.append([element,minn])
 
     st.write("The cost we get from the solution of Least cost method is ")
-    for i, x in enumerate(output_cost_arr):
-        if i == len(output_cost_arr) - 1:  # If it's the last element
-            st.write(f"{x[0]} x {x[1]}", end="")
-        else:
-            st.write(f"{x[0]} x {x[1]}", end=" + ")
-
+    cost_parts = [f"{x[0]} x {x[1]}" for x in output_cost_arr]
+    cost_expression = " + ".join(cost_parts)
     output_cost = sum([x[0]*x[1] for x in output_cost_arr])
-    st.write("=",output_cost) 
+
+    st.markdown("##### The cost we get from the solution of Vogel's approximation method is:")
+    st.markdown(f"**{cost_expression} = {output_cost}**") 
 
     return output_cost
     
@@ -134,7 +130,7 @@ def vam_method(df):
         if ind < m: 
             #this is a row penalty
             #our focus element will be the lowest cost in this row
-            st.write(f"row = {row}")
+            
             col = np.argmin(df.iloc[ind, 0:-2])
             row = ind
             element = df.iloc[row, col]
@@ -143,9 +139,7 @@ def vam_method(df):
             #this is a column penalty
             #our focus element will be the lowest cost in this column
             col = ind - m
-            st.write(f"m = {m} and col  = {col}")
             row = np.argmin(df.iloc[0:-2,col])
-            st.write(f"row = {row}")
             element= df.iloc[row, col]
             st.write(f"element = {element}")
     
