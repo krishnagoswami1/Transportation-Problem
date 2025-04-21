@@ -95,8 +95,7 @@ def least_cost_method(df):
     return output_cost
     
 def vam_method(df): 
-    m,n = df.shape
-    m,n = m-2 , n-2
+    
     # in this method we will be required one additional row and column for penalties 
     df.loc['penalties']= np.nan
     df['penalties'] =np.nan
